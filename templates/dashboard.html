@@ -1,0 +1,29 @@
+<!-- templates/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <button id="quickFocus">Quick Focus</button>
+    <script>
+        document.getElementById('quickFocus').addEventListener('click', function() {
+            fetch('/get_random_user')
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.error) {
+                        window.location.href = `/chat/${data.user_id}`;
+                    } else {
+                        alert(data.error);
+                    }
+                });
+        });
+    </script>
+</body>
+</html>
+
+
+

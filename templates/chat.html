@@ -1,0 +1,82 @@
+<!-- templates/chat.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <style>
+        #chatWindow {
+            border: 1px solid #ccc;
+            height: 300px;
+            overflow-y: scroll;
+            padding: 10px;
+        }
+        .message {
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+        .sender {
+            font-weight: bold;
+        }
+        .timestamp {
+            font-size: small;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat with Anonymous User</h1>
+    <div id="chatWindow"></div>
+    <form id="messageForm">
+        <input type="hidden" id="receiver_id" value="{{ receiver_id }}">
+        <textarea id="messageContent" required></textarea>
+        <button type="submit">Send Message</button>
+    </form>
+    <script>
+        const receiverId = document.getElementById('receiver_id').value;
+
+        function loadMessages() {
+            fetch(`/get_messages/${receiverId}`)
+                .then(response => response.json())
+                .then(messages => {
+                    const chatWindow = document.getElementById('chatWindow');
+                    chatWindow.innerHTML = '';
+                    messages.forEach(msg => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.classList.add('message');
+                        messageDiv.innerHTML = `
+                            <div class="sender">User_${msg[0]}</div>
+                            <div>${msg[1]}</div>
+                            <div class="timestamp">${msg[2]}</div>
+                        `;
+                        chatWindow.appendChild(messageDiv);
+                    });
+                });
+        }
+
+        document.getElementById('messageForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const content = document.getElementById('messageContent').value;
+            fetch('/send_message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ receiver_id: receiverId, content: content })
+            }).then(response => response.json())
+            .then(data => {
+                if (data.status === 'Message sent') {
+                    document.getElementById('messageContent').value = '';
+                    loadMessages();
+                }
+            });
+        });
+
+        loadMessages();
+        setInterval(loadMessages, 5000); // Update the chat window every 5 seconds
+    </script>
+</body>
+</html>
+
+
